@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyAura | Live Tutor Platform</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; }
+    header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+    nav a { color: white; margin: 0 10px; text-decoration: none; font-weight: bold; }
+    .container { padding: 30px; max-width: 1000px; margin: auto; }
+    .form-box, .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px; }
+    input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
+    button { background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #1e40af; }
+    .hidden { display: none; }
+    footer { background: #111827; color: white; text-align: center; padding: 15px; margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>StudyAura</h1>
+  <p>Find trusted home tutors near you</p>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#search">Find Tutor</a>
+    <a href="#register">Register as Tutor</a>
+    <a href="#login">Tutor Login</a>
+  </nav>
+</header>
+
+<div class="container">
+
+<section id="search" class="form-box">
+  <h2>Search Home Tutor</h2>
+  <input type="text" id="subjectSearch" placeholder="Enter Subject">
+  <select id="classSearch">
+    <option value="">Select Class</option>
+    <option value="6-8">Class 6–8</option>
+    <option value="9-10">Class 9–10</option>
+    <option value="11-12">Class 11–12</option>
+  </select>
+  <input type="text" id="areaSearch" placeholder="Enter Area / Pincode">
+  <button onclick="findTutor()">Find Tutor</button>
+</section>
+
+<section id="tutorCard" class="card hidden">
+  <h3>Tutor Found ✅</h3>
+  <p><b>Name:</b> <span id="cardName"></span></p>
+  <p><b>Subject:</b> <span id="cardSubject"></span></p>
+  <p><b>Class:</b> <span id="cardClass"></span></p>
+  <p><b>Mode:</b> <span id="cardMode"></span></p>
+  <p><b>Fees:</b> ₹<span id="cardFees"></span></p>
+  <p><b>Area:</b> <span id="cardArea"></span></p>
+</section>
+
+<section id="register" class="form-box">
+  <h2>Tutor Registration</h2>
+  <input id="tutorName" placeholder="Full Name">
+  <input id="tutorEmail" type="email" placeholder="Email">
+  <input id="tutorPassword" type="password" placeholder="Password">
+  <input id="subject" placeholder="Subject">
+  <select id="class">
+    <option value="">Select Class</option>
+    <option value="6-8">6–8</option>
+    <option value="9-10">9–10</option>
+    <option value="11-12">11–12</option>
+  </select>
+  <input id="area" placeholder="Area / Pincode">
+  <input id="fees" type="number" placeholder="Monthly Fees">
+  <input id="experience" placeholder="Experience (Years)">
+  <input id="whatsapp" placeholder="WhatsApp Number">
+  <select id="mode">
+    <option value="">Select Mode</option>
+    <option>Online</option>
+    <option>Offline</option>
+    <option>Both</option>
+  </select>
+  <button onclick="payAndRegister()">Register</button>
+</section>
+
+<section id="success" class="card hidden">
+  <h3>🎉 Registration Successful</h3>
+</section>
+
+<section id="login" class="form-box">
+  <h2>Tutor Login</h2>
+  <input id="loginEmail" type="email" placeholder="Email">
+  <input id="loginPassword" type="password" placeholder="Password">
+  <button onclick="loginTutor()">Login</button>
+</section>
+
+<section id="profile" class="card hidden">
+  <h3>Welcome <span id="tutorNameDisplay"></span></h3>
+  <p><b>Subject:</b> <span id="subjectDisplay"></span></p>
+  <p><b>Class:</b> <span id="classDisplay"></span></p>
+  <p><b>Fees:</b> ₹<span id="feesDisplay"></span></p>
+  <p><b>Mode:</b> <span id="modeDisplay"></span></p>
+  <button onclick="logoutTutor()">Logout</button>
+</section>
+
+</div>
+
+<footer>
+  <p>© 2025 StudyAura</p>
+</footer>
+
+<script>
+let tutors = JSON.parse(localStorage.getItem("tutors")) || [];
+
+function payAndRegister(){
+  tutors.push({
+    name: tutorName.value,
+    email: tutorEmail.value,
+    password: tutorPassword.value,
+    subject: subject.value,
+    classSel: document.getElementById("class").value,
+    area: area.value,
+    fees: fees.value,
+    experience: experience.value,
+    whatsapp: whatsapp.value,
+    mode: mode.value
+  });
+  localStorage.setItem("tutors", JSON.stringify(tutors));
+  register.classList.add("hidden");
+  success.classList.remove("hidden");
+}
+
+function loginTutor(){
+  const tutor = tutors.find(t => t.email === loginEmail.value && t.password === loginPassword.value);
+  if(!tutor){ alert("Invalid login"); return; }
+  login.classList.add("hidden");
+  profile.classList.remove("hidden");
+  tutorNameDisplay.textContent = tutor.name;
+  subjectDisplay.textContent = tutor.subject;
+  classDisplay.textContent = tutor.classSel;
+  feesDisplay.textContent = tutor.fees;
+  modeDisplay.textContent = tutor.mode;
+}
+
+function logoutTutor(){
+  profile.classList.add("hidden");
+  login.classList.remove("hidden");
+}
+
+function findTutor(){
+  const tutor = tutors[0];
+  if(!tutor){ alert("No tutor found"); return; }
+  tutorCard.classList.remove("hidden");
+  cardName.textContent = tutor.name;
+  cardSubject.textContent = tutor.subject;
+  cardClass.textContent = tutor.classSel;
+  cardMode.textContent = tutor.mode;
+  cardFees.textContent = tutor.fees;
+  cardArea.textContent = tutor.area;
+}
+</script>
+
+</body>
+</html>
