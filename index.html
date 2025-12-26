@@ -1,39 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="GOOGLE_CODE" />
-  <title>Study Aura</title>
-  <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fa; }
-    header { background: #2563eb; color: white; padding: 20px; text-align: center; }
-    nav a { color: white; margin: 0 10px; text-decoration: none; font-weight: bold; }
-    .container { padding: 30px; max-width: 1000px; margin: auto; }
-    .form-box, .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px; }
-    input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
-    button { background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #1e40af; }
-    .hidden { display: none; }
-  </style>
+<meta charset="UTF-8">
+<title>Study Aura | Find Tutors Near You</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- GOOGLE VERIFICATION -->
+<meta name="google-site-verification" content="PASTE_YOUR_CODE_HERE">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
+body{background:#f4f6fb;padding-bottom:80px}
+header{background:#4f46e5;color:#fff;text-align:center;padding:35px}
+section{padding:30px;max-width:1000px;margin:auto;display:none}
+section.active{display:block}
+.card{background:#fff;padding:20px;border-radius:15px;margin:15px 0;box-shadow:0 10px 20px rgba(0,0,0,.08)}
+button{background:#4f46e5;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
+input,select{width:100%;padding:10px;margin:8px 0;border-radius:10px;border:1px solid #ccc}
+.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:#fff;display:flex;justify-content:space-around;padding:12px 0;box-shadow:0 -2px 10px rgba(0,0,0,.1)}
+.bottom-nav button{background:none;color:#4f46e5;font-size:14px}
+</style>
 </head>
+
 <body>
 
 <header>
-  <h1>StudyAura</h1>
-  <p>Find trusted home tutors near you</p>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#search">Find Tutor</a>
-  </nav>
+<h2>Study Aura</h2>
+<p>Real Tutor Marketplace</p>
 </header>
 
-<div class="container">
-  <!-- Tumhara website content yahan -->
+<!-- HOME -->
+<section id="home" class="active">
+<h3>Available Tutors</h3>
+<div id="tutors"></div>
+</section>
+
+<!-- TUTOR REGISTER -->
+<section id="tutor">
+<h3>Register as Tutor</h3>
+<div class="card">
+<input id="tname" placeholder="Tutor Name">
+<input id="subject" placeholder="Subject">
+<select id="mode">
+<option>Online</option>
+<option>Offline</option>
+</select>
+<input id="fees" placeholder="Fees per hour">
+<button onclick="registerTutor()">Submit (Admin Approval Required)</button>
 </div>
+</section>
+
+<!-- ADMIN PANEL -->
+<section id="admin">
+<h3>Admin Panel (Owner: Kia 👑)</h3>
+<div id="adminRequests"></div>
+</section>
+
+<!-- PROFILE -->
+<section id="profile">
+<h3>Your Profile</h3>
+<div class="card">
+<p>Name: Kia</p>
+<p>Role: Admin / Student</p>
+<button onclick="alert('Logout (demo)')">Logout</button>
+</div>
+</section>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+<button onclick="show('home')">🏠 Home</button>
+<button onclick="show('tutor')">🧑‍🏫 Tutor</button>
+<button onclick="show('admin')">👑 Admin</button>
+<button onclick="show('profile')">👤 Profile</button>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "study-aura.firebaseapp.com",
+  projectId: "study-aura"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// SHOW SECTIONS
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+window.show = show;
+
+// SIGNUP (demo)
+window.signup = function(){
+createUserWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>alert("Account Created"))
+.catch(e=>alert(e.message));
+}
+
+// REGISTER TUTOR
+window.registerTutor = async function(){
+await addDoc(collection(db,"tutors"),{
+name:tname.value,
+subject:subject.value,
+mode:mode.value,
+fees:fees.value,
+approved:false
+});
+alert("Tutor Registered. Waiting for Admin Approval");
+loadTutors();
+loadAdminRequests();
+}
+
+// LOAD APPROVED TUTORS
+async function loadTutors(){
+tutors.innerHTML="";
+const q = query(collection(db,"tutors"), where("approved","==",true));
+const snap = await getDocs(q);
+snap.forEach(doc=>{
+  tutors.innerHTML += `
+  <div class="card">
+    <h4>${doc.data().name}</h4>
+    <p>${doc.data().subject}</p>
+    <p>${doc.data().mode}</p>
+    <p>₹${doc.data().fees}/hr</p>
+  </div>`;
+});
+}
+window.loadTutors = loadTutors;
+loadTutors();
+
+// ADMIN REQUESTS
+async function loadAdminRequests(){
+adminRequests.innerHTML="";
+const q = query(collection(db,"tutors"), where("approved","==",false));
+const snap = await getDocs(q);
+snap.forEach(doc=>{
+  adminRequests.innerHTML += `
+  <div class="card">
+    <h4>${doc.data().name} - ${doc.data().subject}</h4>
+    <button onclick="approveTutor('${doc.id}')">Approve</button>
+    <button onclick="rejectTutor('${doc.id}')" style="background:#dc2626">Reject</button>
+  </div>`;
+});
+}
+window.loadAdminRequests = loadAdminRequests;
+
+async function approveTutor(id){
+await updateDoc(doc(db,"tutors",id),{approved:true});
+alert("Tutor Approved ✅");
+loadTutors();
+loadAdminRequests();
+}
+
+async function rejectTutor(id){
+await updateDoc(doc(db,"tutors",id),{approved:null});
+alert("Tutor Rejected ❌");
+loadAdminRequests();
+}
+
+</script>
 
 </body>
 </html>
-
-
- 
-
- 
